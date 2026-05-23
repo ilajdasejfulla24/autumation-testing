@@ -1,0 +1,19 @@
+{
+  "name": "sqt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "seleniumTest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "selenium-webdriver": "^4.41.0"
+  },
+  "devDependencies": {
+    "cypress": "^15.13.0"
+  }
+}
