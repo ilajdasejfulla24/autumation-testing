@@ -1,0 +1,113 @@
+// testCineVerse.js
+const { Builder, By, until } = require('selenium-webdriver');
+
+(async function cineVerseTest() {
+
+  let driver = await new Builder().forBrowser('chrome').build();
+
+  const waitEl = (locator) => driver.wait(until.elementLocated(locator), 5000);
+  const click = async (locator) => (await waitEl(locator)).click();
+
+  try {
+    await driver.get('http://127.0.0.1:54515/sqt.html');
+        // =========================
+    // TITLE TEST
+    // =========================
+    let title = await driver.getTitle();
+    console.log("Title Test:", title === "CineVerse Anime · Login" ? "PASSED ✅" : "FAILED ❌");
+
+    // =========================
+    // ✅ TEST 2: VALID LOGIN
+    // =========================
+   // =========================
+await driver.findElement(By.id('loginUsername')).clear();
+await driver.findElement(By.id('loginPassword')).clear();
+
+await driver.findElement(By.id('loginUsername')).sendKeys('animefan');
+await driver.findElement(By.id('loginPassword')).sendKeys('otaku123');
+
+await click(By.css('#loginModal button[type="submit"]'));
+
+let logoutBtn = await waitEl(By.id('logoutBtn'));
+
+console.log(
+  "Valid Login Test:",
+  (await logoutBtn.isDisplayed()) ? "PASSED ✅" : "FAILED ❌"
+);
+// =========================
+// FILTER TEST (GENRE)
+// =========================
+
+// Select genre (adjust value if needed)
+let genreDropdown = await waitEl(By.css('select'));
+
+await genreDropdown.click();
+await genreDropdown.sendKeys('Action'); // or exact visible text
+
+// Wait a bit for filtering to apply
+await driver.sleep(500);
+
+// Get all visible anime cards
+let cards = await driver.findElements(By.css('.anime-card'));
+
+let allMatch = true;
+
+for (let card of cards) {
+  let text = await card.getText();
+
+  // Check if each card contains "Action"
+  if (!text.toLowerCase().includes('action')) {
+    allMatch = false;
+    break;
+  }
+}
+
+// Check result count
+let countText = await (await waitEl(By.id('animeCount'))).getText();
+let countNumber = parseInt(countText);
+
+// Final result
+if (allMatch && countNumber === cards.length && cards.length > 0) {
+  console.log("Genre Filter Test: PASSED ✅");
+} else {
+  console.log("Genre Filter Test: FAILED ❌");
+}
+
+    // =========================
+    // WATCHLIST ADD TEST
+    // =========================
+    await click(By.css('.slider-card .watch-btn'));
+
+    let count = await (await waitEl(By.id('watchCount'))).getText();
+
+    console.log("Watchlist Add Test:", count == '1' ? 
+      "PASSED ✅" : "FAILED ❌");
+
+
+    // =========================
+    // WATCHLIST REMOVE TEST
+    // =========================
+    await click(By.css('.watch-badge'));
+    await waitEl(By.id('watchModal'));
+
+    await click(By.css('.remove-btn'));
+
+    count = await (await waitEl(By.id('watchCount'))).getText();
+
+    console.log("Watchlist Remove Test:", count == '0' ? 
+      "PASSED ✅" : "FAILED ❌");
+
+
+    // =========================
+    // LOGOUT TEST
+    // =========================
+    await driver.executeScript("document.getElementById('watchModal').style.display='none';");
+
+
+  } catch (error) {
+    console.log("Test Execution Error ❌:", error);
+  } finally {
+    await driver.quit();
+  }
+
+})();
