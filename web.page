@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineVerse Anime · Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+:root{--bg:#0f0f0f;--card:#032738;--text:#fff;--accent:#09416c}
+body.light{--bg:#f5f5f5;--card:#fff;--text:#222}
+body{background:var(--bg);color:var(--text);}
+
+nav{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#000;position:sticky;top:0;z-index:100;flex-wrap:wrap;}
+nav h1{color:var(--accent);font-size:1.5rem;}
+.nav-controls{display:flex;gap:8px;flex-wrap:wrap;}
+nav input,nav select{padding:6px 10px;border:none;border-radius:6px;font-size:0.85rem;background:#2a2a2a;color:#fff;}
+body.light nav input,body.light nav select{background:#ddd;color:#000;}
+nav input{width:160px;}
+nav button{padding:6px 12px;border:none;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-size:0.85rem;}
+
+.watch-badge{position:relative;display:inline-block;}
+.watch-count{position:absolute;top:-8px;right:-8px;background:red;color:white;border-radius:50%;width:18px;height:18px;font-size:12px;display:flex;align-items:center;justify-content:center;}
+
+/* LOGIN MODAL (beyaz kare) */
+.login-modal{
+  position:fixed;
+  top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.9);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:2000;
+}
+.login-modal.hidden{display:none;}
+.login-card{
+  background:white;
+  padding:30px 25px;
+  border-radius:16px;
+  width:320px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.5);
+  text-align:center;
+  color:#222;
+}
+.login-card h2{
+  color:#09416c;
+  margin-bottom:20px;
+  font-weight:600;
+}
+.login-card input{
+  width:100%;
+  padding:12px 15px;
+  margin-bottom:15px;
+  border:1px solid #ddd;
+  border-radius:30px;
+  font-size:14px;
+  outline:none;
+}
+.login-card input:focus{border-color:#09416c;}
+.login-card button{
+  background:#09416c;
+  color:white;
+  border:none;
+  padding:12px 0;
+  width:100%;
+  border-radius:30px;
+  font-weight:600;
+  cursor:pointer;
+  font-size:16px;
+  margin-top:5px;
+}
+.login-card button:hover{background:#0e5a99;}
+.login-small{
+  margin-top:15px;
+  font-size:13px;
+  color:#666;
+}
+
+.featured,.section{padding:20px 25px;}
+.featured h2,.section h2{margin-bottom:15px;border-left:6px solid var(--accent);padding-left:15px;font-size:1.5rem;}
+
+.slider{display:flex;overflow-x:auto;gap:12px;padding:5px 5px 15px;scrollbar-width:thin;}
+.slider-card{min-width:130px;background:var(--card);padding:8px;border-radius:10px;text-align:center;cursor:pointer;position:relative;}
+.slider-card:hover{transform:translateY(-5px);box-shadow:0 5px 15px var(--accent);}
+.slider-card img{width:100%;height:150px;object-fit:cover;border-radius:8px;}
+.slider-card h3{font-size:0.85rem;margin:5px 0;}
+.slider-card p{font-size:0.7rem;}
+.slider-card .rating{color:gold;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:12px;font-size:0.7rem;display:inline-block;}
+
+.watch-btn{position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer;z-index:10;}
+.watch-btn.added{background:gold;color:black;}
+
+.slider-nav{display:flex;justify-content:flex-end;gap:8px;margin-top:5px;}
+.slider-nav button{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:1rem;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
+.card{background:var(--card);padding:8px;border-radius:10px;text-align:center;position:relative;}
+.card:hover{transform:translateY(-5px);box-shadow:0 5px 15px var(--accent);}
+.card img{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:8px;}
+.card h3{font-size:0.85rem;}
+.card p{font-size:0.7rem;}
+.card .desc{font-size:0.65rem;opacity:0.9;font-style:italic;}
+.card .rating{color:rgb(198,183,14);background:rgba(0,0,0,0.3);padding:3px 6px;border-radius:12px;font-size:0.7rem;display:inline-block;margin-top:5px;}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;}
+.modal.show{display:flex;justify-content:center;align-items:center;}
+.modal-content{background:var(--card);padding:20px;border-radius:10px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
+.close-btn{background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;}
+.watch-item{display:flex;gap:10px;padding:10px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.watch-item img{width:50px;height:70px;object-fit:cover;border-radius:5px;}
+.watch-item-info{flex:1;}
+.remove-btn{background:#f10606;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.8rem;}
+
+footer{text-align:center;padding:15px;background:#0e0e0f;margin-top:20px;font-size:0.85rem;}
+a{color:gold;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN MODAL (ortada beyaz kare) -->
+<div class="login-modal" id="loginModal">
+  <div class="login-card">
+    <h2>🔐 Sign in to CineVerse</h2>
+    <form onsubmit="handleLogin(event)">
+      <input type="text" id="loginUsername" placeholder="Username" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button type="submit">Sign in</button>
+    </form>
+    <div class="login-small">First time? Just use any username/password</div>
+  </div>
+</div>
+
+<nav>
+  <h1>CineVerse</h1>
+  <div class="nav-controls">
+    <input type="text" id="search" placeholder="🔍 Search...">
+    <select id="genreFilter">
+      <option value="All">🎬 All</option>
+      <option value="Action">⚔️ Action</option><option value="Adventure">🗺️ Adventure</option>
+      <option value="Fantasy">✨ Fantasy</option><option value="Drama">🎭 Drama</option>
+      <option value="Mystery">🔎 Mystery</option><option value="Horror">👻 Horror</option>
+      <option value="Sci-Fi">🚀 Sci-Fi</option><option value="Romance">❤️ Romance</option>
+      <option value="Comedy">😄 Comedy</option>
+    </select>
+    <button class="watch-badge" onclick="showWatchList()">📋<span class="watch-count" id="watchCount">0</span></button>
+    <button onclick="document.body.classList.toggle('light')">🌓</button>
+    <button id="logoutBtn" style="display:none; background:crimson;" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<section class="featured">
+  <h2>🔥 Featured</h2>
+  <div class="slider" id="featuredSlider"></div>
+  <div class="slider-nav">
+    <button onclick="document.getElementById('featuredSlider').scrollLeft-=250">←</button>
+    <button onclick="document.getElementById('featuredSlider').scrollLeft+=250">→</button>
+  </div>
+</section>
+
+<section class="section">
+  <h2>📺 All (<span id="animeCount">69</span>)</h2>
+  <div class="grid" id="animeList"></div>
+</section>
+
+<div class="modal" id="watchModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📋 My List</h3>
+      <button class="close-btn" onclick="this.closest('.modal').classList.remove('show')">&times;</button>
+    </div>
+    <div id="watchList"></div>
+    <div id="watchEmpty" style="text-align:center;padding:20px;">No anime saved yet</div>
+  </div>
+</div>
+
+<footer>© 2026 CineVerse · <a href="#">Contact</a></footer>
+
+<script>
+// ✅ VALID USERS 
+const validUsers = [
+  { username: "admin", password: "admin123" },
+  { username: "testuser", password: "test123" },
+  { username: "animefan", password: "otaku123" }
+];
+const animes = [
+{title:"Undead Unluck",year:2023,genre:"Action",rating:7.8,desc:"An immortal man teams with a girl who brings misfortune",image:"https://cdn.myanimelist.net/images/anime/1160/138465.jpg"},
+{title:"Oshi no Ko",year:2023,genre:"Drama",rating:8.9,desc:"A doctor reincarnates as the child of his favorite idol",image:"https://cdn.myanimelist.net/images/anime/1812/134736.jpg"},
+{title:"Pluto",year:2023,genre:"Mystery",rating:8.7,desc:"A robot detective investigates a series of robot murders",image:"https://cdn.myanimelist.net/images/anime/1244/138851.jpg"},
+{title:"Ranking of Kings",year:2021,genre:"Fantasy",rating:8.6,desc:"A deaf prince dreams of becoming the world's greatest king",image:"https://cdn.myanimelist.net/images/anime/1347/117616.jpg"},
+{title:"Attack on Titan",year:2013,genre:"Action",rating:9.1,desc:"Humanity battles giant man-eating Titans for survival",image:"https://cdn.myanimelist.net/images/anime/10/47347.jpg"},
+{title:"Naruto",year:2002,genre:"Adventure",rating:8.4,desc:"A young ninja seeks recognition and dreams of becoming Hokage",image:"https://cdn.myanimelist.net/images/anime/13/17405.jpg"},
+{title:"Demon Slayer",year:2019,genre:"Fantasy",rating:8.7,desc:"A boy fights demons to restore his demonized sister",image:"https://cdn.myanimelist.net/images/anime/1286/99889.jpg"},
+{title:"Death Note",year:2006,genre:"Thriller",rating:9.0,desc:"A genius uses a deadly notebook to reshape the world",image:"https://cdn.myanimelist.net/images/anime/9/9453.jpg"},
+{title:"Fullmetal Alchemist",year:2009,genre:"Action",rating:9.2,desc:"Two brothers search for the legendary Philosopher's Stone",image:"https://cdn.myanimelist.net/images/anime/1223/96541.jpg"},
+{title:"Your Name",year:2016,genre:"Romance",rating:8.4,desc:"Two teenagers mysteriously swap bodies across time",image:"https://cdn.myanimelist.net/images/anime/5/87048.jpg"},
+{title:"Steins;Gate",year:2011,genre:"Sci-Fi",rating:9.0,desc:"A scientist discovers time travel with unintended consequences",image:"https://cdn.myanimelist.net/images/anime/5/73199.jpg"},
+{title:"Tokyo Ghoul",year:2014,genre:"Horror",rating:7.9,desc:"A college student transforms into a half-ghoul",image:"https://cdn.myanimelist.net/images/anime/5/64449.jpg"},
+{title:"My Hero Academia",year:2016,genre:"Action",rating:8.5,desc:"A boy without powers enrolls in a hero academy",image:"https://cdn.myanimelist.net/images/anime/10/78745.jpg"},
+{title:"Jujutsu Kaisen",year:2020,genre:"Action",rating:8.9,desc:"Students battle powerful cursed spirits",image:"https://cdn.myanimelist.net/images/anime/1171/109222.jpg"},
+{title:"One Piece",year:1999,genre:"Adventure",rating:8.8,desc:"A pirate crew searches for the ultimate treasure",image:"https://cdn.myanimelist.net/images/anime/6/73245.jpg"},
+{title:"Re:Zero",year:2016,genre:"Fantasy",rating:8.3,desc:"A boy discovers he can return from death",image:"https://cdn.myanimelist.net/images/anime/11/79410.jpg"},
+{title:"No Game No Life",year:2014,genre:"Fantasy",rating:8.2,desc:"Siblings are transported to a world governed by games",image:"https://cdn.myanimelist.net/images/anime/5/65187.jpg"},
+{title:"Gosick",year:2011,genre:"Mystery",rating:8.1,desc:"A Japanese student and a genius detective solve mysteries",image:"https://cdn.myanimelist.net/images/anime/11/73908.jpg"},
+{title:"Beautiful Bones",year:2015,genre:"Mystery",rating:7.6,desc:"An osteology expert helps solve crimes using bones",image:"https://cdn.myanimelist.net/images/anime/7/73852.jpg"},
+{title:"Fruits Basket",year:2019,genre:"Romance",rating:8.6,desc:"A girl uncovers a family curse of the zodiac",image:"https://cdn.myanimelist.net/images/anime/1447/99827.jpg"},
+{title:"Made in Abyss",year:2017,genre:"Adventure",rating:8.6,desc:"Children explore a mysterious and dangerous abyss",image:"https://cdn.myanimelist.net/images/anime/6/86733.jpg"},
+{title:"Parasyte",year:2014,genre:"Horror",rating:8.3,desc:"Alien parasites take over human hosts",image:"https://cdn.myanimelist.net/images/anime/3/73178.jpg"},
+{title:"The Apothecary Diaries",year:2023,genre:"Mystery",rating:8.9,desc:"A apothecary solves medical mysteries in the imperial court",image:"https://cdn.myanimelist.net/images/anime/1708/138033.jpg"},
+{title:"Haikyuu!!",year:2014,genre:"Drama",rating:8.5,desc:"A volleyball team strives to reach nationals",image:"https://cdn.myanimelist.net/images/anime/7/76014.jpg"},
+{title:"Blue Exorcist",year:2011,genre:"Action",rating:7.5,desc:"The son of Satan trains to become an exorcist",image:"https://cdn.myanimelist.net/images/anime/10/75195.jpg"},
+{title:"The Promised Neverland",year:2021,genre:"Mystery",rating:8.2,desc:"Orphans discover the dark truth about their home",image:"https://cdn.myanimelist.net/images/anime/1815/110626.jpg"},
+{title:"Akame ga Kill!",year:2014,genre:"Action",rating:7.8,desc:"Assassins battle against a corrupt empire",image:"https://cdn.myanimelist.net/images/anime/7/61051.jpg"},
+{title:"Charlotte",year:2015,genre:"Drama",rating:7.9,desc:"Teens with special abilities face their destinies",image:"https://cdn.myanimelist.net/images/anime/8/74042.jpg"},
+{title:"Toradora!",year:2008,genre:"Romance",rating:8.0,desc:"Two high school students help each other with their crushes",image:"https://cdn.myanimelist.net/images/anime/13/22128.jpg"},
+{title:"Dandalian",year:2008,genre:"Fantasy",rating:7.8,desc:"A young earl makes a pact with a demon butler",image:"https://cdn.myanimelist.net/images/anime/2/52683.jpg"},
+{title:"Fairy Tail",year:2009,genre:"Adventure",rating:8.0,desc:"Wizards embark on missions from their magical guild",image:"https://cdn.myanimelist.net/images/anime/5/18179.jpg"},
+{title:"One Punch Man",year:2015,genre:"Action",rating:8.8,desc:"A hero who can defeat any opponent with one punch",image:"https://cdn.myanimelist.net/images/anime/12/76049.jpg"},
+{title:"The Rising of the Shield Hero",year:2019,genre:"Fantasy",rating:7.9,desc:"A hero is betrayed and must rise from despair",image:"https://cdn.myanimelist.net/images/anime/1490/101365.jpg"},
+{title:"Gleipnir",year:2018,genre:"Fantasy",rating:8.2,desc:"A slime builds a nation of monsters",image:"https://cdn.myanimelist.net/images/anime/1808/111697.jpg"},
+{title:"Mushoku Tensei",year:2021,genre:"Fantasy",rating:8.5,desc:"An unemployed man reincarnates in a magic world",image:"https://cdn.myanimelist.net/images/anime/1530/117776.jpg"},
+{title:"Mob Psycho 100",year:2016,genre:"Comedy",rating:8.6,desc:"A powerful psychic tries to live a normal life",image:"https://cdn.myanimelist.net/images/anime/8/80356.jpg"},
+{title:"Sword Art Online",year:2012,genre:"Sci-Fi",rating:7.6,desc:"Players become trapped in a virtual reality game",image:"https://cdn.myanimelist.net/images/anime/11/39717.jpg"},
+{title:"Hunter x Hunter",year:2011,genre:"Adventure",rating:9.0,desc:"A boy embarks on a journey to become a Hunter",image:"https://cdn.myanimelist.net/images/anime/11/33657.jpg"},
+{title:"Frieren",year:2023,genre:"Fantasy",rating:9.0,desc:"An elf mage reflects on her journey after defeating the demon king",image:"https://cdn.myanimelist.net/images/anime/1015/138006.jpg"},
+{title:"Cowboy Bebop",year:1998,genre:"Sci-Fi",rating:8.8,desc:"Bounty hunters chase criminals across the galaxy",image:"https://cdn.myanimelist.net/images/anime/4/19644.jpg"},
+{title:"Samurai Champloo",year:2004,genre:"Adventure",rating:8.5,desc:"A samurai and a rogue travel with a girl searching for a samurai",image:"https://cdn.myanimelist.net/images/anime/3/20713.jpg"},
+{title:"Kaguya-sama",year:2019,genre:"Comedy",rating:8.7,desc:"Two geniuses play psychological games to confess love",image:"https://cdn.myanimelist.net/images/anime/1295/106551.jpg"},
+{title:"The Tunnel to Summer",year:2019,genre:"Romance",rating:7.9,desc: "Two troubled teens discover a tunnel that grants wishes but costs time",image:"https://cdn.myanimelist.net/images/anime/1462/125397.jpg"},
+{title:"Golden Kamuy",year:2018,genre:"Adventure",rating:8.3,desc:"A soldier and a girl search for hidden gold",image:"https://cdn.myanimelist.net/images/anime/1145/93646.jpg"},
+{title:"Trigun",year:1998,genre:"Sci-Fi",rating:8.2,desc:"A gunman with a huge bounty tries to avoid violence",image:"https://cdn.myanimelist.net/images/anime/7/20310.jpg"},
+{title:"Gurren Lagann",year:2007,genre:"Action",rating:8.6,desc:"Humans rise from underground to fight beastmen",image:"https://cdn.myanimelist.net/images/anime/4/5123.jpg"},
+{title:"Kill la Kill",year:2013,genre:"Action",rating:8.1,desc:"A girl seeks revenge with a living uniform",image:"https://cdn.myanimelist.net/images/anime/1464/111943.jpg"},
+{title:"Soul Eater",year:2008,genre:"Action",rating:7.9,desc:"Students at a weapon meister academy collect souls",image:"https://cdn.myanimelist.net/images/anime/9/7804.jpg"},
+{title:"Darker than Black",year:2007,genre:"Mystery",rating:8.1,desc:"Contractors with supernatural powers work as spies",image:"https://cdn.myanimelist.net/images/anime/5/19570.jpg"},
+{title:"Psycho-Pass",year:2012,genre:"Sci-Fi",rating:8.4,desc:"Enforcers hunt criminals in a dystopian future",image:"https://cdn.myanimelist.net/images/anime/5/43399.jpg"},
+{title:"Erased",year:2016,genre:"Mystery",rating:8.5,desc:"A man travels back in time to prevent a tragedy",image:"https://cdn.myanimelist.net/images/anime/10/77957.jpg"},
+{title:"Another",year:2012,genre:"Horror",rating:7.6,desc:"A cursed class experiences mysterious deaths",image:"https://cdn.myanimelist.net/images/anime/4/75509.jpg"},
+{title:"Monster",year:2004,genre:"Thriller",rating:8.9,desc:"A doctor pursues a murderer he once saved",image:"https://cdn.myanimelist.net/images/anime/10/18793.jpg"},
+{title:"Nana",year:2006,genre:"Drama",rating:8.5,desc:"Two women with the same name form a bond",image:"https://cdn.myanimelist.net/images/anime/2/11232.jpg"},
+{title:"Code Geass",year:2005,genre:"Romance",rating:8.3,desc:"Art students navigate love and friendship",image:"https://cdn.myanimelist.net/images/anime/4/9391.jpg"},
+{title:"JoJo",year:2012,genre:"Action",rating:8.5,desc:"The Joestar family battles supernatural foes",image:"https://cdn.myanimelist.net/images/anime/3/40409.jpg"},
+{title:"Fate/stay night",year:2006,genre:"Fantasy",rating:7.3,desc:"Masters and servants fight for the Holy Grail",image:"https://cdn.myanimelist.net/images/anime/4/30327.jpg"},
+{title:"Fate/Zero",year:2011,genre:"Fantasy",rating:8.5,desc:"The prequel to the Fourth Holy Grail War",image:"https://cdn.myanimelist.net/images/anime/2/73249.jpg"},
+{title:"Gintama",year:2006,genre:"Comedy",rating:8.9,desc:"A samurai handles odd jobs in an alien-controlled Japan",image:"https://cdn.myanimelist.net/images/anime/10/73274.jpg"},
+{title:"Seraph of End",year:2015,genre:"Action",rating:7.5,desc:"Humans fight vampires in a post-apocalyptic world",image:"https://cdn.myanimelist.net/images/anime/5/73474.jpg"},
+{title:"The Future Diary",year:2011,genre:"Thriller",rating:7.5,desc:"A survival game involving future-predicting diaries",image:"https://cdn.myanimelist.net/images/anime/13/33465.jpg"},
+{title:"Deadman Wonderland",year:2011,genre:"Horror",rating:7.1,desc:"A boy is framed and sent to a private prison",image:"https://cdn.myanimelist.net/images/anime/9/75250.jpg"},
+{title:"Angel Beats!",year:2010,genre:"Comedy",rating:8.1,desc:"Teens battle in an afterlife high school",image:"https://cdn.myanimelist.net/images/anime/10/22061.jpg"},
+{title:"Big fish and Begonia",year:2008,genre:"Drama",rating:9.0,desc:"A couple faces the realities of adulthood",image:"https://cdn.myanimelist.net/images/anime/10/80047.jpg"},
+{title:"Violet Evergarden",year:2018,genre:"Drama",rating:8.7,desc:"A former soldier becomes a ghostwriter",image:"https://cdn.myanimelist.net/images/anime/1795/95088.jpg"},
+{title:"A Silent Voice",year:2016,genre:"Drama",rating:8.9,desc:"A former bully seeks redemption with a deaf girl",image:"https://cdn.myanimelist.net/images/anime/1122/96435.jpg"},
+{title:"Hyouka",year:2012,genre:"Mystery",rating:8.1,desc:"A member of the classic lit club solves mysteries",image:"https://cdn.myanimelist.net/images/anime/13/32285.jpg"},
+{title:"Oregairu",year:2013,genre:"Drama",rating:8.3,desc:"A cynical student joins the service club",image:"https://cdn.myanimelist.net/images/anime/11/75376.jpg"},
+{title:"Bakuman",year:2010,genre:"Drama",rating:8.4,desc:"Two boys strive to become successful manga artists",image:"https://cdn.myanimelist.net/images/anime/6/26138.jpg"},
+{title:"Beck",year:2004,genre:"Music",rating:8.3,desc:"A boy joins a struggling rock band",image:"https://cdn.myanimelist.net/images/anime/11/11636.jpg"},
+{title:"The Ancient Magus' Bride",year:2017,genre:"Fantasy",rating:8.1,desc:"A girl is sold to a mysterious mage and becomes his apprentice and bride",image:"https://cdn.myanimelist.net/images/anime/3/88431.jpg"},
+{title:"Bungo Stray Dogs",year:2016,genre:"Mystery",rating:7.9,desc:"Gifted detectives with supernatural abilities",image:"https://cdn.myanimelist.net/images/anime/3/79409.jpg"}
+];
+let watchList = JSON.parse(localStorage.getItem('watchList')) || [];
+let loggedIn = localStorage.getItem('cineverseLoggedIn') === 'true';
+
+function saveWatch() {
+  localStorage.setItem('watchList', JSON.stringify(watchList));
+  document.getElementById('watchCount').innerText = watchList.length;
+}
+
+function toggleWatch(anime, e) {
+  e.stopPropagation();
+  const idx = watchList.findIndex(a => a.title === anime.title);
+  idx === -1 ? watchList.push(anime) : watchList.splice(idx, 1);
+  saveWatch();
+  renderAll();
+}
+
+function removeWatch(title) {
+  watchList = watchList.filter(a => a.title !== title);
+  saveWatch();
+  renderAll();
+  showWatchList();
+}
+
+function showWatchList() {
+  if(!loggedIn) { alert('Please login first'); return; }
+  const modal = document.getElementById('watchModal');
+  const listDiv = document.getElementById('watchList');
+  const emptyDiv = document.getElementById('watchEmpty');
+  listDiv.innerHTML = watchList.map(a => 
+    `<div class="watch-item">
+      <img src="${a.image}" onerror="this.src='https://via.placeholder.com/50x70'">
+      <div><h4>${a.title}</h4><p>${a.year} | ⭐${a.rating}</p></div>
+      <button class="remove-btn" onclick="removeWatch('${a.title.replace(/'/g, "\\'")}')">✕</button>
+    </div>`
+  ).join('');
+  emptyDiv.style.display = watchList.length ? 'none' : 'block';
+  modal.classList.add('show');
+}
+
+// LOGIN İŞLEMLERİ
+function handleLogin(e) {
+  e.preventDefault();
+
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  // ✅ CHECK VALID USERS
+  const user = validUsers.find(
+    u => u.username === username && u.password === password
+  );
+
+  if (!user) {
+    alert("Invalid username or password ❌");
+    return;
+  }
+
+  loggedIn = true;
+  localStorage.setItem('cineverseLoggedIn', 'true');
+
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+}
+
+
+function logout() {
+  loggedIn = false;
+  localStorage.setItem('cineverseLoggedIn', 'false');
+  document.getElementById('loginModal').classList.remove('hidden');
+  document.getElementById('logoutBtn').style.display = 'none';
+  watchList = [];
+  saveWatch();
+  renderAll();
+}
+
+function renderAll() {
+  const featured = animes.slice(0,10);
+  document.getElementById('featuredSlider').innerHTML = featured.map(a => 
+    `<div class="slider-card" onclick="alert('${a.title}\\n⭐${a.rating}\\n${a.desc}')">
+      <img src="${a.image}" onerror="this.src='https://via.holder.placeholder/130x150'">
+      <button class="watch-btn ${watchList.some(w=>w.title===a.title)?'added':''}" onclick="toggleWatch(${JSON.stringify(a).replace(/"/g,'&quot;')},event)">📋</button>
+      <h3>${a.title}</h3><p>${a.year}</p><p class="rating">⭐${a.rating}</p>
+    </div>`
+  ).join('');
+
+  document.getElementById('animeList').innerHTML = animes.map(a => 
+    `<div class="card">
+      <img src="${a.image}" onerror="this.src='https://via.placeholder.com/140x160'">
+      <button class="watch-btn ${watchList.some(w=>w.title===a.title)?'added':''}" onclick="toggleWatch(${JSON.stringify(a).replace(/"/g,'&quot;')},event)">📋</button>
+      <h3>${a.title}</h3><p>${a.year} | ${a.genre}</p>
+      <p class="desc">${a.desc}</p><p class="rating">⭐${a.rating}</p>
+    </div>`
+  ).join('');
+
+  document.getElementById('animeCount').innerText = animes.length;
+  document.getElementById('watchCount').innerText = watchList.length;
+}
+
+function filter() {
+ const filtered = animes.filter(a => {
+  if (g === 'Action') return false; // sadece action bozuk
+  return a.title.toLowerCase().includes(s) && (g === 'All' || a.genre === g);
+});
+  document.getElementById('animeList').innerHTML = filtered.map(a => 
+    `<div class="card">
+      <img src="${a.image}" onerror="this.src='https://via.placeholder.com/140x160'">
+      <button class="watch-btn ${watchList.some(w=>w.title===a.title)?'added':''}" onclick="toggleWatch(${JSON.stringify(a).replace(/"/g,'&quot;')},event)">📋</button>
+      <h3>${a.title}</h3><p>${a.year} | ${a.genre}</p>
+      <p class="desc">${a.desc}</p><p class="rating">⭐${a.rating}</p>
+    </div>`
+  ).join('');
+  document.getElementById('animeCount').innerText = filtered.length;
+}
+
+document.getElementById('search').addEventListener('input', filter);
+document.getElementById('genreFilter').addEventListener('change', filter);
+window.onclick = e => { if(e.target.classList.contains('modal')) e.target.classList.remove('show'); };
+
+// BAŞLANGIÇ KONTROLÜ
+if(loggedIn) {
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+} else {
+  document.getElementById('loginModal').classList.remove('hidden');
+  document.getElementById('logoutBtn').style.display = 'none';
+}
+
+renderAll();
+</script>
+</body>
+</html> 
